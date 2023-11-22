@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="forms">
+    <form action="/edit-account/{{ account.id }}" method="post">
+      {{ form.hidden_tag() }}
+      <fieldset class="form-group">
+        <legend class="border-bottom mb-3">Edit Account</legend>
+        <div class="form-group">
+        {{ form.username.label(class="form-control-label") }}
+        <br>
+        {{ form.username }}
+        </div>
+        <div class="form-group">
+        {{ form.currentPassword.label(class="form-control-label") }}
+        <br>
+        {{ form.currentPassword }}
+        </div>
+        <div class="form-group">
+        {{ form.password.label(class="form-control-label") }}
+        <br>
+        {{ form.password }}
+        </div>
+        <div class="form-group">
+          {{ form.confirmPassword.label(class="form-control-label") }}
+          <br>
+          {{ form.confirmPassword }}
+          </div>
+      </fieldset>
+      <div class="form-group">
+        {{ form.submit(class="btn btn-light") }}
+      </div>
+    </form>
+{% endblock %}

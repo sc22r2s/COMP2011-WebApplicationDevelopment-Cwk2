@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-
+from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user
 
 from flask_migrate import Migrate
@@ -14,6 +14,9 @@ db = SQLAlchemy(app)
 # To manage login
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+# To manage encryption
+bcrypt = Bcrypt(app)
 
 app.config.from_object('config')
 

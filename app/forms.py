@@ -29,3 +29,23 @@ class SignUpForm(FlaskForm):
     Length(min=4, max=21)
     ])
     submit = SubmitField('Sign Up')
+
+# Form to edit account
+class EditAccountForm(FlaskForm):
+    username = StringField("Username", validators=[
+        DataRequired(),
+        Length(max=21)
+    ])
+    currentPassword = PasswordField('Password', validators=[
+        DataRequired(),
+        Length(min=4, max=21)
+    ])
+    password = PasswordField('Confirm Password', validators=[
+    DataRequired(),
+    Length(min=4, max=21)
+    ])
+    confirmPassword = PasswordField('Confirm Password', validators=[
+    DataRequired(),
+    Length(min=4, max=21)
+    ])
+    submit = SubmitField('Update')
