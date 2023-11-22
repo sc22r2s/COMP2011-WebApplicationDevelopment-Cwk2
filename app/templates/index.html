@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>{% block title %} Welcome to Cashier {% endblock %}</h1>
-    
     {% if current_user.is_authenticated %}
-	You are logged in as {{ current_user.username }}<br>
+	Welcome {{ current_user.username }}
+	<br>
 	Some functionality for logged in user is displayed here
 	{% else %}
-	You are not logged in.<br>
-    Please login to use the app.
+	You are not logged in.
+	<br>
+    Please <b><a href="/login">login</a></b> to use the app.
 	{% endif %}
 
 {% endblock %}

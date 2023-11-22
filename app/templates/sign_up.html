@@ -1,14 +1,29 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>{% block title %} Sign up {% endblock %}</h1>
-
-  <form action="#" method="post">
-    <label for="username">Username:</label>
-    <input type="text" name="username" />
-    <label for="password">Password:</label>
-    <input type="password" name="password" />
-    <button type="submit">Submit</button>
+<div class="forms">
+  <form action="/register" method="post">
+    {{ form.hidden_tag() }}
+    <fieldset class="form-group">
+      <legend class="border-bottom mb-3">Sign Up</legend>
+      <div class="form-group">
+      {{ form.username.label(class="form-control-label") }}
+      <br>
+      {{ form.username }}
+      </div>
+      <div class="form-group">
+      {{ form.password.label(class="form-control-label") }}
+      <br>
+      {{ form.password }}
+      </div>
+      <div class="form-group">
+        {{ form.confirmPassword.label(class="form-control-label") }}
+        <br>
+        {{ form.confirmPassword }}
+        </div>
+    </fieldset>
+    <div class="form-group">
+      {{ form.submit(class="btn btn-light") }}
+    </div>
   </form>
-    
 {% endblock %}
