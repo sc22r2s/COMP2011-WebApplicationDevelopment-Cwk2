@@ -1,3 +1,3 @@
 # Dependencies
 
-'''pip install flask flask-login flask-sqlalchemy flask-bcrypt'''
+```pip install flask flask-login flask-sqlalchemy flask-bcrypt```

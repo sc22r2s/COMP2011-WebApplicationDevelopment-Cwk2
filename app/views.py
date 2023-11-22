@@ -3,7 +3,6 @@ from app import app, db, admin, models, login_manager, bcrypt
 from flask_login import UserMixin, login_user, logout_user, login_required, current_user
 
 from sqlalchemy.exc import IntegrityError, DataError, OperationalError
-
 from .forms import (LoginForm, SignUpForm, EditAccountForm)
 
 @login_manager.user_loader
@@ -20,10 +19,12 @@ def register():
         if form.validate_on_submit():
             try:
                 if request.form.get("password") == request.form.get("confirmPassword"):
+                    # Encrypt password
                     hashedPassword = bcrypt.generate_password_hash(request.form.get("password")).decode('utf-8') 
                     user = models.Users(username=request.form.get("username"), password=hashedPassword)
                     db.session.add(user)
                     db.session.commit()
+                    
                     return redirect(url_for("login"))
                 else:  # Passwords does not match
                     flash("Passwords does not match", "danger")
@@ -44,17 +45,21 @@ def login():
                 username=request.form.get("username")).first()
                 if bcrypt.check_password_hash(user.password, request.form.get("password")):
                     login_user(user)
+
                     flash("Logged in successfully", "success")
+
                     return redirect(url_for("home"))
                 else:
                     # Clear form fields
                     form.username.data = ""
                     form.password.data = ""
+
                     flash("Incorrect username or password", "danger")
             except (IntegrityError, AttributeError):
                 # Clear form fields
                 form.username.data = ""
                 form.password.data = ""
+
                 flash("Incorrect username or password", "danger")
 
     return render_template("login.html", form=form)
@@ -64,6 +69,7 @@ def login():
 @login_required
 def logout():
     logout_user()
+
     flash("Logged out successfully", "success")
 
     return redirect(url_for("home"))
@@ -88,6 +94,7 @@ def deleteAccount(account_id):
             user = db.session.query(models.Users).get(account_id)
             db.session.delete(user)
             db.session.commit()
+
             flash("Account has been deleted", "success")
         except (DataError, OperationalError, IntegrityError):
             flash("Account could not be deleted", "danger")
