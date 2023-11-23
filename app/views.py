@@ -13,6 +13,11 @@ def loader_user(user_id):
 @app.route('/register', methods=["GET", "POST"])
 @login_required
 def register():
+    """Handles registering a new user.
+
+    Returns:
+        The template to be rended.
+    """
     form = SignUpForm()
     
     if request.method == "POST":
@@ -36,6 +41,11 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    """Handles login of a user.
+
+    Returns:
+        Redirects to the home page if login is successful.
+    """
     form = LoginForm()
     
     if request.method == "POST":
@@ -68,6 +78,11 @@ def login():
 @app.route("/logout")
 @login_required
 def logout():
+    """Handles the logout of a user.
+
+    Returns:
+        Redirects to the home page.
+    """
     logout_user()
 
     flash("Logged out successfully", "success")
@@ -78,6 +93,11 @@ def logout():
 @app.route("/manage-account")
 @login_required
 def manageAccount():
+    """Displays tables contain all the users.
+
+    Returns:
+        The template to be rendered.
+    """
     if current_user.username == "admin":
         users = db.session.query(models.Users).all()
 
@@ -89,6 +109,14 @@ def manageAccount():
 @app.route("/delete-account/<account_id>", methods=["GET", "POST"])
 @login_required
 def deleteAccount(account_id):
+    """Deletes a user.
+
+    Args:
+        account_id (int): id of the account to delete.
+
+    Returns:
+        Redirects back to the manage account page.
+    """
     if current_user.username == "admin":
         try:
             user = db.session.query(models.Users).get(account_id)
@@ -107,6 +135,14 @@ def deleteAccount(account_id):
 @app.route("/edit-account/<account_id>", methods=["GET", "POST"])
 @login_required
 def editAccount(account_id):
+    """Displays and allows the account details to be edited.
+
+    Args:
+        account_id (int): id of the account to edit.
+
+    Returns:
+        Redirects back to the manage account page if successful.
+    """
     form = EditAccountForm()
     user = db.session.query(models.Users).get(account_id)
     
@@ -140,4 +176,9 @@ def editAccount(account_id):
 
 @app.route("/")
 def home():
+    """Renders the home page.
+
+    Returns:
+        The template to be rendered.
+    """
     return render_template("index.html")

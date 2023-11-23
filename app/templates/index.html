@@ -3,12 +3,9 @@
 {% block content %}
     {% if current_user.is_authenticated %}
 	Welcome {{ current_user.username }}
-	<br>
-	Some functionality for logged in user is displayed here
 	{% else %}
-	You are not logged in.
+	Welcome!
 	<br>
     Please <b><a href="/login">login</a></b> to use the app.
 	{% endif %}
-
 {% endblock %}
