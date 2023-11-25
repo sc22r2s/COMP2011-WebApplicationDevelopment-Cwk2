@@ -26,8 +26,8 @@
             <td><a class="btn btn-outline-dark btn-sm" href ="/edit-product/{{ product.id }}">Edit</a></td>
             <td><a class="btn btn-outline-dark btn-sm" href ="/delete-product/{{ product.id }}">Delete</a></td>
             {% else %}
-            <td><a class="btn btn-outline-dark btn-sm disabled" href ="/">Delete</a></td>
             <td><a class="btn btn-outline-dark btn-sm disabled" href ="/">Edit</a></td>
+            <td><a class="btn btn-outline-dark btn-sm disabled" href ="/">Delete</a></td>
             {% endif %}
             </tr>
         {% endfor %}

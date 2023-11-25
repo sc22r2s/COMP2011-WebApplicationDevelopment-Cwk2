@@ -1,10 +1,12 @@
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, jsonify
 from app import app, db, admin, models, login_manager, bcrypt
 from flask_login import UserMixin, login_user, logout_user, login_required, current_user
 
 from sqlalchemy.exc import IntegrityError, DataError, OperationalError, PendingRollbackError
 from .forms import (LoginForm, SignUpForm, EditAccountForm,
                     AddProductForm, EditProductForm)
+
+import json
 
 
 @login_manager.user_loader
@@ -327,6 +329,28 @@ def editProduct(product_id):
 
         return redirect(url_for("viewProduct"))
 
+
+@app.route("/stock-in", methods=["GET", "POST"])
+@login_required
+def stockIn():
+    return render_template("stock_in.html")
+
+
+@app.route("/ajax/display-product-detail", methods=["GET", "POST"])
+def displayProductDetail():
+    code = request.args.get("productCode")
+    
+    try:
+        product = models.Product.query.filter_by(productCode=code).first()
+
+        return jsonify({"id": product.id,
+                        "productCode": product.productCode,
+                        "productName": product.productName,
+                        "description": product.description,
+                        "rate": product.rate})
+
+    except AttributeError:
+        return jsonify({"error": "This product does not exist"})
 
 @app.route("/")
 def home():
