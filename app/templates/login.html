@@ -8,17 +8,37 @@
 				<legend class="border-bottom mb-3">Login</legend>
 				<div class="form-group">
 				{{ form.username.label(class="form-control-label") }}
-				<br>
-				{{ form.username }}
+				
+				{% if form.username.errors %}
+					{{ form.username(class="form-control is-invalid") }}
+					<div class="invalid-feedback">
+					{% for error in form.username.errors %}
+						<span>{{ error }} </span>
+					{% endfor %}
+					</div>
+				{% else %}
+					{{ form.username(class="form-control") }}
+				{% endif %}
 				</div>
+
 				<div class="form-group">
 				{{ form.password.label(class="form-control-label") }}
-				<br>
-				{{ form.password }}
+				
+				{% if form.password.errors %}
+					{{ form.password(class="form-control is-invalid") }}
+					<div class="invalid-feedback">
+					{% for error in form.password.errors %}
+						<span>{{ error }} </span>
+					{% endfor %}
+					</div>
+				{% else %}
+					{{ form.password(class="form-control") }}
+				{% endif %}
 				</div>
 			</fieldset>
 			<div class="form-group">
-			  {{ form.submit(class="btn btn-light") }}
+			  {{ form.submit(class="form-control btn btn-light") }}
 			</div>
 		</form>
+	</div>
 {% endblock %}

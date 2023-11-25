@@ -2,12 +2,14 @@ from flask import render_template, request, redirect, url_for, flash
 from app import app, db, admin, models, login_manager, bcrypt
 from flask_login import UserMixin, login_user, logout_user, login_required, current_user
 
-from sqlalchemy.exc import IntegrityError, DataError, OperationalError
-from .forms import (LoginForm, SignUpForm, EditAccountForm)
+from sqlalchemy.exc import IntegrityError, DataError, OperationalError, PendingRollbackError
+from .forms import (LoginForm, SignUpForm, EditAccountForm,
+                    AddProductForm, EditProductForm)
+
 
 @login_manager.user_loader
 def loader_user(user_id):
-	return models.Users.query.get(user_id)
+    return models.Users.query.get(user_id)
 
 
 @app.route('/register', methods=["GET", "POST"])
@@ -19,21 +21,26 @@ def register():
         The template to be rended.
     """
     form = SignUpForm()
-    
+
     if request.method == "POST":
         if form.validate_on_submit():
             try:
                 if request.form.get("password") == request.form.get("confirmPassword"):
                     # Encrypt password
-                    hashedPassword = bcrypt.generate_password_hash(request.form.get("password")).decode('utf-8') 
-                    user = models.Users(username=request.form.get("username"), password=hashedPassword)
+                    hashedPassword = bcrypt.generate_password_hash(
+                        request.form.get("password")).decode('utf-8')
+                    user = models.Users(username=request.form.get(
+                        "username"), password=hashedPassword)
                     db.session.add(user)
                     db.session.commit()
-                    
+
+                    flash("User created successfully", "success")
+
                     return redirect(url_for("login"))
                 else:  # Passwords does not match
                     flash("Passwords does not match", "danger")
-            except (IntegrityError, AttributeError):  # Username already exists
+            except (IntegrityError, PendingRollbackError):  # Username already exists
+                db.session.rollback()
                 flash("Username already taken", "danger")
 
     return render_template("sign_up.html", form=form)
@@ -47,12 +54,12 @@ def login():
         Redirects to the home page if login is successful.
     """
     form = LoginForm()
-    
+
     if request.method == "POST":
         if form.validate_on_submit():
             try:
                 user = models.Users.query.filter_by(
-                username=request.form.get("username")).first()
+                    username=request.form.get("username")).first()
                 if bcrypt.check_password_hash(user.password, request.form.get("password")):
                     login_user(user)
 
@@ -61,14 +68,14 @@ def login():
                     return redirect(url_for("home"))
                 else:
                     # Clear form fields
-                    form.username.data = ""
-                    form.password.data = ""
+                    form = LoginForm(formdata=None)
+                    form.process()
 
                     flash("Incorrect username or password", "danger")
             except (IntegrityError, AttributeError):
                 # Clear form fields
-                form.username.data = ""
-                form.password.data = ""
+                form = LoginForm(formdata=None)
+                form.process()
 
                 flash("Incorrect username or password", "danger")
 
@@ -93,7 +100,7 @@ def logout():
 @app.route("/manage-account")
 @login_required
 def manageAccount():
-    """Displays tables contain all the users.
+    """Displays a table containing all the users.
 
     Returns:
         The template to be rendered.
@@ -126,7 +133,7 @@ def deleteAccount(account_id):
             flash("Account has been deleted", "success")
         except (DataError, OperationalError, IntegrityError):
             flash("Account could not be deleted", "danger")
-            
+
         users = db.session.query(models.Users).all()
 
     return render_template("manage_account.html", accounts=users)
@@ -144,34 +151,181 @@ def editAccount(account_id):
         Redirects back to the manage account page if successful.
     """
     form = EditAccountForm()
-    user = db.session.query(models.Users).get(account_id)
-    
+    try:
+        user = db.session.query(models.Users).get(account_id)
+
+        if current_user.username == "admin":
+            if form.validate_on_submit():
+                try:
+                    if bcrypt.check_password_hash(user.password, request.form.get("currentPassword")):
+                        if request.form.get("password") == request.form.get("confirmPassword"):
+                            user.password = bcrypt.generate_password_hash(
+                                request.form.get("password")).decode('utf-8')
+                            user.username = request.form.get("username")
+                            db.session.commit()
+
+                            flash("Account has been updated", "success")
+
+                            return redirect(url_for("manageAccount"))
+                        else:
+                            flash("New passwords does not match", "danger")
+                    else:
+                        flash("Password does not match the old one", "danger")
+                except IntegrityError:
+                    flash("This income name already exists", 'danger')
+
+                    return redirect(url_for("manageAccount"))
+
+            # Insert data in the form
+            form.username.default = user.username
+            form.process()
+
+            return render_template("edit_account.html", account=user, form=form)
+
+    except (IntegrityError, AttributeError):
+        flash("This account does not exist", "danger")
+
+        return redirect(url_for("home"))
+
+
+@app.route("/add-product", methods=["GET", "POST"])
+@login_required
+def addProduct():
+    """Handles adding a product.
+
+    Returns:
+        The template to be rendered.
+    """
+    form = AddProductForm()
+
     if current_user.username == "admin":
         if form.validate_on_submit():
             try:
-                if bcrypt.check_password_hash(user.password, request.form.get("currentPassword")):
-                    if request.form.get("password") == request.form.get("confirmPassword"):
-                        user.password = bcrypt.generate_password_hash(request.form.get("password")).decode('utf-8')
-                        user.username = request.form.get("username")
-                        db.session.commit()
-                        
-                        flash("Account has been updated", "success")
-                        
-                        return redirect(url_for("manageAccount"))
-                    else:
-                        flash("New passwords does not match", "danger")
-                else:
-                    flash("Password does not match the old one", "danger")
-            except IntegrityError:
-                flash("This income name already exists", 'danger')
-                
-                return redirect(url_for("manageAccount"))
-    
-    # Empty the data fields in the from after it has been processed
-    form.username.default = user.username
-    form.process()
-    
-    return render_template("edit_account.html", account=user, form=form)
+                product = models.Product(productCode=request.form.get("productCode"),
+                                         productName=request.form.get(
+                                             "productName"),
+                                         description=request.form.get(
+                                             "description"),
+                                         rate=request.form.get("rate"))
+                db.session.add(product)
+                db.session.commit()
+
+                flash("Product has been added successfully", "success")
+
+                # Clear form fields
+                form = AddProductForm(formdata=None)
+                form.process()
+
+                return render_template("add_product.html", form=form)
+
+            except (IntegrityError, AttributeError, PendingRollbackError):
+                db.session.rollback()
+
+                flash("Product can't have the same name", "danger")
+
+                return render_template("add_product.html", form=form)
+
+        # Clear form fields
+        form = AddProductForm(formdata=None)
+        form.process()
+
+        return render_template("add_product.html", form=form)
+
+    return redirect(url_for("home"))
+
+
+@app.route("/view-product", methods=["GET", "POST"])
+@login_required
+def viewProduct():
+    """Displays a table containing all the products.
+
+    Returns:
+        The template to be rendered.
+    """
+    products = db.session.query(models.Product).all()
+
+    if current_user.username == "admin":
+
+        return render_template("view_product.html", products=products, admin=True)
+    else:
+        return render_template("view_product.html", products=products, admin=False)
+
+
+@app.route("/delete-product/<product_id>", methods=["GET", "POST"])
+@login_required
+def deleteProduct(product_id):
+    """Deletes a product.
+
+    Args:
+        product_id (int): id of the product to delete.
+
+    Returns:
+        Redirects back to the view product page.
+    """
+    if current_user.username == "admin":
+        try:
+            product = db.session.query(models.Product).get(product_id)
+            db.session.delete(product)
+            db.session.commit()
+
+            flash("Product has been deleted", "success")
+
+        except (IntegrityError, AttributeError, PendingRollbackError):
+            flash("Account could not be deleted", "danger")
+
+        products = db.session.query(models.Product).all()
+
+    return render_template("view_product.html", products=products, admin=True)
+
+
+@app.route("/edit-product/<product_id>", methods=["GET", "POST"])
+@login_required
+def editProduct(product_id):
+    """Displays and allows the product details to be edited.
+
+    Args:
+        product_id (int): id of the product to edit.
+
+    Returns:
+        Redirects back to the view product page if successful.
+    """
+    form = EditProductForm()
+    try:
+        product = db.session.query(models.Product).get(product_id)
+
+        if form.validate_on_submit():
+            try:
+                product.productCode = request.form.get("productCode")
+                product.productName = request.form.get("productName")
+                product.description = request.form.get("description")
+                product.rate = request.form.get("rate")
+
+                db.session.commit()
+
+                flash("Product has been successfully updated", "success")
+
+                return redirect(url_for("viewProduct"))
+
+            except (IntegrityError, AttributeError, PendingRollbackError):
+                db.session.rollback()
+
+                flash("Product could not be updated", "danger")
+
+                return redirect("/edit-product/" + product_id)
+
+        # Insert data in the form
+        form.productCode.default = product.productCode
+        form.productName.default = product.productName
+        form.description.default = product.description
+        form.rate.default = product.rate
+        form.process()
+
+        return render_template("edit_product.html", form=form, product=product)
+
+    except (IntegrityError, AttributeError, PendingRollbackError):
+        flash("Product could not be updated", "danger")
+
+        return redirect(url_for("viewProduct"))
 
 
 @app.route("/")

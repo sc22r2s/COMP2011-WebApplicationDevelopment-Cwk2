@@ -10,6 +10,7 @@ admin = $2b$12$dgtNmUp1CzzplcY0w0gLR.FwtxeKxyu1PCP0GFNE7g7DQafVjYJxO
 
 product
     product_id - int primary key
+    product_code - text(12)
     description - text(100)
     rate - float
 
