@@ -7,6 +7,7 @@ from .forms import (LoginForm, SignUpForm, EditAccountForm,
                     AddProductForm, EditProductForm)
 
 import json
+import datetime
 
 
 @login_manager.user_loader
@@ -351,6 +352,40 @@ def displayProductDetail():
 
     except AttributeError:
         return jsonify({"error": "This product does not exist"})
+
+
+@app.route("/ajax/add-batch", methods=["GET", "POST"])
+def addBatch():
+    batch = json.loads(request.args.get("batch"))
+    
+    try:
+        batch_ = models.StockInOut(batchCode=batch["batchCode"],
+                                batchDate=datetime.date.today(),
+                                inOut=batch["batchDirection"])
+        db.session.add(batch_)
+        db.session.commit()
+
+        for items in batch["productDetail"]:
+            stockInOut = models.StockInOutDetail(productId=items["productId"],
+                                           stockInOutId=batch_.id,
+                                           quantity=items["quantity"])
+            db.session.add(stockInOut)
+        
+        db.session.commit()
+        
+        # flash("Batch added successfully", "success")
+        # return render_template("stock_in.html")
+        return jsonify({"success": "Batch added successfully"})
+
+    except (IntegrityError, AttributeError, PendingRollbackError):
+        db.session.rollback()
+        # flash("An error occurred", "danger")
+
+        # return render_template("stock_in.html")
+        # return {"error": "An error occurred"}
+        
+        return jsonify({"error": ""})
+
 
 @app.route("/")
 def home():

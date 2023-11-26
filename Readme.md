@@ -36,3 +36,8 @@ invoice_detail
     quantity - int
     rate - float
     amount - float
+
+SELECT productName, sum(iif(inOut == 0, quantity, -quantity)) as stockBalance
+FROM stock_in_out as sio, stock_in_out_detail as siod, product as p
+WHERE sio.id = siod.stockInOutId and p.id = siod.productId
+GROUP BY productName

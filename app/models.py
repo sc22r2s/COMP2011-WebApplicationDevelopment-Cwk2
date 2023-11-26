@@ -19,17 +19,20 @@ class Product(db.Model):
     description = db.Column(db.String(250), nullable=False)
     rate = db.Column(db.Float, nullable=False)
 
-class StockIn(db.Model):
+class StockInOut(db.Model):
     """StockIn table to store stock in.
     """
     id = db.Column(db.Integer, primary_key=True)
     batchCode = db.Column(db.Integer, unique=True, nullable=False)
     batchDate = db.Column(db.Date, nullable=False)
+    # 0 = in
+    # 1 = out
+    inOut = db.Column(db.Integer, nullable=False, default=0)
 
-class StockInDetail(db.Model):
+class StockInOutDetail(db.Model):
     """StockInDetail table to store stock in details.
     """
     id = db.Column(db.Integer, primary_key=True)
-    productId = db.Column(db.Integer, db.ForeignKey("Product.id"))
-    stockInId = db.Column(db.Integer, db.ForeignKey("StockIn.id"))
+    productId = db.Column(db.Integer, db.ForeignKey("product.id"))
+    stockInOutId = db.Column(db.Integer, db.ForeignKey("stock_in_out.id"))
     quantity = db.Column(db.Integer, nullable=False)

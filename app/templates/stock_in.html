@@ -1,8 +1,27 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<label for="BatchCodeInput">Batch Code
+  <input
+    type="text"
+    class="form-control"
+    id="BatchCodeInput"
+    placeholder="Batch Code"
+  />
+</label>
+
+<label for="BatchCodeInput">Batch In or Out
+  <select class="form-select" aria-label="Stock in or out" id="BatchInOutDropdown">
+    <option selected value="0">Batch In</option>
+    <option value="1">Batch Out</option>
+  </select>
+</label>
+
+
+<hr>
+
 <div class="forms">
-  <form action="#" method="post" id="form">
+  <form action="" method="post" id="form">
     <div class="form-group">
       <label for="ProductCodeInput">Product Code</label>
       <input
@@ -89,10 +108,11 @@
     </tbody>
 </table>
 
-<button type="submit" class="btn btn-light" id="submit-batch-btn">Save Batch</button>
+<button type="submit" class="btn btn-light" id="submit-batch-btn" onClick="saveBatch()">Save Batch</button>
 
 <script>
-    var batch = {"productId": [], "quantity": []}
+    var batch = {"batchCode": "", "batchDirection": "0", "productDetail": []};
+    var batchProducts = [];
 
   $("#ProductCodeInput").keydown(function (event) {
 
@@ -113,6 +133,8 @@
                     $("#ProductNameDisplay").val(data.productName);
                     $("#ProductDescriptionDisplay").val(data.description);
                     $("#ProductRateDisplay").val(data.rate);
+                    // Next cursor destination
+                    $("#ProductQuantityInput").focus();
                 }
             },
             error: function (jqXhr, textStatus, errorMessage) {
@@ -132,16 +154,14 @@
         alert("Enter product quantity");
     } else if (!(parseInt($("#ProductQuantityInput").val()))) { // Check if product quantity is an integer
         alert("Invalid product quantity");         
-    } else if (batch["productId"].includes(parseInt($("#ProductIdDisplay").val()))) { // Check if product already in batch
+    } else if (batchProducts.includes(parseInt($("#ProductIdDisplay").val()))) { // Check if product already in batch
         alert("Product already added in this batch");
     } else {
         // Append data in the table
         $('#product-row').append("<tr><td>" + $("#ProductIdDisplay").val() + "</td><td>"+$("#ProductCodeInput").val()+"</td><td>"+$("#ProductNameDisplay").val()+"</td><td>" + $("#ProductQuantityInput").val() + "</td></tr>");
         
-        batch["productId"].push(parseInt($("#ProductIdDisplay").val()));
-        batch["quantity"].push(parseInt($("#ProductQuantityInput").val()));
-
-        console.log(batch["productId"]);
+        batch["productDetail"].push({"productId": parseInt($("#ProductIdDisplay").val()), "quantity": parseInt($("#ProductQuantityInput").val())});
+        batchProducts.push(parseInt($("#ProductIdDisplay").val()));
 
         // Clear data from form after appending data in table
         $("#ProductCodeInput").val("");
@@ -150,8 +170,40 @@
         $("#ProductDescriptionDisplay").val("");
         $("#ProductRateDisplay").val("");
         $("#ProductQuantityInput").val("");
+
+        // Next cursor destination
+        $("#ProductCodeInput").focus();
     }
 
   });
+
+  function saveBatch() {
+    if (batchProducts.length === 0){
+      alert("No product added");
+    } else if ($("#BatchCodeInput").val() === ""){
+      alert("Batch code must be provided");
+    } else {
+      batch["batchCode"] = $("#BatchCodeInput").val()
+      batch["batchDirection"] = $("#BatchInOutDropdown").val()
+
+      $.ajax({
+        type: 'GET',
+        url: '/ajax/add-batch',
+        data: { batch: JSON.stringify(batch) }, 
+        success: function(data, status, xhr) {
+          if (data.hasOwnProperty("error") ) {
+            alert("Batch can not be added");
+          } else {
+            alert("Batch added successfully")
+            location.reload()
+          }
+        },
+        error: function (jqXhr, textStatus, errorMessage) {
+            // error callback
+            alert(errorMessage);
+        }
+    });
+    }
+  }
 </script>
 {% endblock %}
