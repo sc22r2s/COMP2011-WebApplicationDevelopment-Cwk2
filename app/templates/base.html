@@ -8,9 +8,9 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     {% if title %}
-    <title>Billing Software - {{ title }}</title>
+    <title>Inventory Software - {{ title }}</title>
     {% else %}
-    <title>Billing Software</title>
+    <title>Inventory Software</title>
     {% endif %}
     <meta name="description" content="" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -33,7 +33,7 @@
 
     <nav class="navbar navbar-expand-lg bg-body-tertiary navbar-fixed-top">
       <div class="container-fluid">
-        <a class="navbar-brand">Billing Software</a>
+        <a class="navbar-brand">Inventory Software</a>
 
         <button
           class="navbar-toggler"
@@ -94,10 +94,8 @@
                 <li class="nav-item">
                     {% if current_user.username == "admin" %}
                     <a class="nav-link" href="/add-product">Add Product</a>
-                    <a class="nav-link" href="/stock-in">Add Stock</a>
                     {% else %}
                     <a class="nav-link disabled" href="/">Add Product</a>
-                    <a class="nav-link disabled" href="/">Add Stock</a>
                     {% endif %}
                 </li>
                 <li class="nav-item">
@@ -105,6 +103,29 @@
                     <a class="nav-link" href="/view-product">View Product</a>
                     {% else %}
                     <a class="nav-link disabled" href="/">View Product</a>
+                    {% endif %}
+                </li>
+              </ul>
+            </li>
+
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Stock
+              </a>
+              <ul class="dropdown-menu">
+                <li class="nav-item">
+                <li class="nav-item">
+                    {% if current_user.is_authenticated %}
+                    <a class="nav-link" href="/stock">Manage Stock</a>
+                    {% else %}
+                    <a class="nav-link disabled" href="/">Manage Stock</a>
+                    {% endif %}
+                </li>
+                <li class="nav-item">
+                    {% if current_user.is_authenticated %}
+                    <a class="nav-link" href="/view-stock">View Stock</a>
+                    {% else %}
+                    <a class="nav-link disabled" href="/">View Stock</a>
                     {% endif %}
                 </li>
               </ul>

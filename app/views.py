@@ -3,11 +3,13 @@ from app import app, db, admin, models, login_manager, bcrypt
 from flask_login import UserMixin, login_user, logout_user, login_required, current_user
 
 from sqlalchemy.exc import IntegrityError, DataError, OperationalError, PendingRollbackError
+from sqlalchemy.orm.exc import UnmappedInstanceError
 from .forms import (LoginForm, SignUpForm, EditAccountForm,
                     AddProductForm, EditProductForm)
 
 import json
 import datetime
+import sqlite3
 
 
 @login_manager.user_loader
@@ -268,17 +270,20 @@ def deleteProduct(product_id):
     if current_user.username == "admin":
         try:
             product = db.session.query(models.Product).get(product_id)
+            db.session.execute('pragma foreign_keys=on')
             db.session.delete(product)
             db.session.commit()
 
             flash("Product has been deleted", "success")
 
-        except (IntegrityError, AttributeError, PendingRollbackError):
-            flash("Account could not be deleted", "danger")
+            products = db.session.query(models.Product).all()
+            return render_template("view_product.html", products=products, admin=True)
 
-        products = db.session.query(models.Product).all()
+        except (IntegrityError, AttributeError, PendingRollbackError, UnmappedInstanceError):
+            flash("This product is already added in stock or it does not exist", "danger")
+            
+            return redirect(url_for("viewProduct"))
 
-    return render_template("view_product.html", products=products, admin=True)
 
 
 @app.route("/edit-product/<product_id>", methods=["GET", "POST"])
@@ -331,16 +336,16 @@ def editProduct(product_id):
         return redirect(url_for("viewProduct"))
 
 
-@app.route("/stock-in", methods=["GET", "POST"])
+@app.route("/stock", methods=["GET", "POST"])
 @login_required
-def stockIn():
-    return render_template("stock_in.html")
+def stock():
+    return render_template("stock.html")
 
 
 @app.route("/ajax/display-product-detail", methods=["GET", "POST"])
 def displayProductDetail():
     code = request.args.get("productCode")
-    
+
     try:
         product = models.Product.query.filter_by(productCode=code).first()
 
@@ -357,22 +362,22 @@ def displayProductDetail():
 @app.route("/ajax/add-batch", methods=["GET", "POST"])
 def addBatch():
     batch = json.loads(request.args.get("batch"))
-    
+
     try:
         batch_ = models.StockInOut(batchCode=batch["batchCode"],
-                                batchDate=datetime.date.today(),
-                                inOut=batch["batchDirection"])
+                                   batchDate=datetime.date.today(),
+                                   inOut=batch["batchDirection"])
         db.session.add(batch_)
         db.session.commit()
 
         for items in batch["productDetail"]:
             stockInOut = models.StockInOutDetail(productId=items["productId"],
-                                           stockInOutId=batch_.id,
-                                           quantity=items["quantity"])
+                                                 stockInOutId=batch_.id,
+                                                 quantity=items["quantity"])
             db.session.add(stockInOut)
-        
+
         db.session.commit()
-        
+
         # flash("Batch added successfully", "success")
         # return render_template("stock_in.html")
         return jsonify({"success": "Batch added successfully"})
@@ -383,8 +388,50 @@ def addBatch():
 
         # return render_template("stock_in.html")
         # return {"error": "An error occurred"}
-        
+
         return jsonify({"error": ""})
+
+
+@app.route("/view-stock")
+def viewStock():
+    query = "SELECT productId, productCode, productName, sum(iif(inOut == 0, quantity, -quantity)) as stockBalance FROM stock_in_out as sio, stock_in_out_detail as siod, product as p WHERE sio.id = siod.stockInOutId and p.id = siod.productId GROUP BY productName"
+
+    try:
+        connection = sqlite3.connect("billing.db")
+        cursor = connection.cursor()
+
+        stocks = cursor.execute(query).fetchall()
+
+        cursor.close()
+        connection.close()
+        
+        return render_template("view_stock.html", stocks=stocks)
+
+    except:
+        flash("Error occurred", "danger")
+
+    return render_template("view_stock.html", stocks=stocks)
+
+
+@app.route("/view-stock-detail/<product_id>", methods=["GET", "POST"])
+def viewStockDetail(product_id):
+    
+    query = "SELECT productCode, productName, batchCode, batchDate, iif(inOut == 0, quantity, -quantity) as stockBalance FROM stock_in_out as sio, stock_in_out_detail as siod, product as p WHERE siod.productId = " + product_id + " and sio.id = siod.stockInOutId and p.id = siod.productId"
+    try:
+        connection = sqlite3.connect("billing.db")
+        cursor = connection.cursor()
+
+        details = cursor.execute(query).fetchall()
+
+        cursor.close()
+        connection.close()
+        
+        return render_template("view_stock_detail.html", details=details)
+
+    except:
+        flash("Error occurred", "danger")
+
+    return render_template("view_stock_detail.html")
 
 
 @app.route("/")
@@ -394,4 +441,6 @@ def home():
     Returns:
         The template to be rendered.
     """
+    db.session.execute('pragma foreign_keys=on')
+    
     return render_template("index.html")

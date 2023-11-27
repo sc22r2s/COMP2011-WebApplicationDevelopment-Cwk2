@@ -37,7 +37,15 @@ invoice_detail
     rate - float
     amount - float
 
-SELECT productName, sum(iif(inOut == 0, quantity, -quantity)) as stockBalance
+### Query to product code, product name and stock balance
+
+SELECT productCode, productName, sum(iif(inOut == 0, quantity, -quantity)) as stockBalance
 FROM stock_in_out as sio, stock_in_out_detail as siod, product as p
 WHERE sio.id = siod.stockInOutId and p.id = siod.productId
 GROUP BY productName
+
+### Query to get detail of stock of one product
+
+SELECT productCode, productName, batchCode, batchDate, iif(inOut == 0, quantity, -quantity) as stockBalance
+FROM stock_in_out as sio, stock_in_out_detail as siod, product as p
+WHERE siod.productId = 1 and sio.id = siod.stockInOutId and p.id = siod.productId

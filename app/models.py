@@ -33,6 +33,6 @@ class StockInOutDetail(db.Model):
     """StockInDetail table to store stock in details.
     """
     id = db.Column(db.Integer, primary_key=True)
-    productId = db.Column(db.Integer, db.ForeignKey("product.id"))
-    stockInOutId = db.Column(db.Integer, db.ForeignKey("stock_in_out.id"))
+    productId = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=False)
+    stockInOutId = db.Column(db.Integer, db.ForeignKey("stock_in_out.id"), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
