@@ -42,7 +42,7 @@ class EditAccountForm(FlaskForm):
         DataRequired(),
         Length(max=21)
     ])
-    currentPassword = PasswordField("Password", validators=[
+    currentPassword = PasswordField("Current Password", validators=[
         DataRequired(),
         Length(min=4, max=21)
     ])

@@ -1,25 +1,27 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<label for="BatchCodeInput">Batch Code
-  <input
-    type="text"
-    class="form-control"
-    id="BatchCodeInput"
-    placeholder="Batch Code"
-  />
-</label>
+<div class="">
+<div class="forms" id="stock-form">
 
-<label for="BatchCodeInput">Batch In or Out
-  <select class="form-select" aria-label="Stock in or out" id="BatchInOutDropdown">
-    <option selected value="0">Batch In</option>
-    <option value="1">Batch Out</option>
-  </select>
-</label>
+  <label for="BatchCodeInput">Batch Code
+    <input
+      type="text"
+      class="form-control"
+      id="BatchCodeInput"
+      placeholder="Batch Code"
+    />
+  </label>
 
-<hr>
+  <label for="StockInOut">Batch In or Out
+    <select class="form-select" id="StockInOut" aria-label="Stock in or out" id="BatchInOutDropdown">
+      <option selected value="0">Batch In</option>
+      <option value="1">Batch Out</option>
+    </select>
+  </label>
 
-<div class="forms">
+  <hr class="mt-2 mb-2">
+
   <form action="" method="post" id="form">
     <div class="form-group">
       <label for="ProductCodeInput">Product Code</label>
@@ -32,7 +34,8 @@
     </div>
     <div id="ProductCodeInputHelp" class="form-text">Press enter after you input the product code.</div>
 
-    <div class="form-group">
+    <div class="form-group mb-2" id="product-info-displays">
+
         <label for="ProductIdDisplay">Product ID
         <input
           type="text"
@@ -44,48 +47,49 @@
         </label>
 
         <label for="ProductNameDisplay">Product Name
-        <input
-        type="text"
-        readonly
-        class="form-control"
-        id="ProductNameDisplay"
-        placeholder="Name of the product"
-        />
-        </label>
+          <input
+          type="text"
+          readonly
+          class="form-control"
+          id="ProductNameDisplay"
+          placeholder="Name of the product"
+          />
+          </label>
 
-        <label for="ProductDescriptionDisplay">Product Description
-        <input
-        type="text"
-        readonly
-        class="form-control"
-        id="ProductDescriptionDisplay"
-        placeholder="Description of the product"
-        />
-        </label>
+          <label for="ProductDescriptionDisplay">Product Description
+            <input
+            type="text"
+            readonly
+            class="form-control"
+            id="ProductDescriptionDisplay"
+            placeholder="Description of the product"
+            />
+            </label>
 
-        <label for="ProductRateDisplay">Product Rate
-        <input
-        type="text"
-        readonly
-        class="form-control"
-        id="ProductRateDisplay"
-        placeholder="Rate of the product"
-        />
-        </label>
+          <label for="ProductRateDisplay">Product Rate
+            <input
+            type="text"
+            readonly
+            class="form-control"
+            id="ProductRateDisplay"
+            placeholder="Rate of the product"
+            />
+            </label>
+
     </div>
 
-    <div class="form-group">
+    <div class="form-group mb-2">
         <label for="ProductQuantityInput">Product Quantity
         <input
         type="text"
         class="form-control"
         id="ProductQuantityInput"
-        placeholder="Enter Product Quantity"
+        placeholder="Quantity"
         />
         </label>
     
         <br>
-        <button type="submit" class="form-group btn btn-light" id="submit-product-btn">Add Product To Batch</button>
+        <button type="submit" class="form-group btn btn-light mt-2" id="submit-product-btn">Add Product To Batch</button>
     </div>
   </form>
 </div>
@@ -108,6 +112,8 @@
 </table>
 
 <button type="submit" class="btn btn-light" id="submit-batch-btn" onClick="saveBatch()">Save Batch</button>
+
+</div>
 
 <script src="../static/js/stock.js"></script>
 {% endblock %}

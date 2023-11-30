@@ -3,3 +3,76 @@
     font-family: "Lucida Console", "Courier New", monospace;
     /* font-family: "Times New Roman", Times, cursive; */
 }
+
+.head-text {
+    font-size: 1.5em;
+    font-style: italic;
+    font-weight: 600;
+    text-align: center;
+    padding-top: 0.5em;
+    padding-bottom: 0.75em;
+    text-decoration: underline;
+}
+
+.forms {
+    width: 80%;
+
+    padding: 1em;
+
+    border: 2px solid black;
+    border-radius: 0.75em;
+
+    margin: auto;
+}
+
+.center {
+    margin: 0;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+#login-form, #sign-up-form, #edit-account-form {
+    width: 25%;
+}
+
+#add-product-form, #edit-product-form {
+    width: 40%;
+    top: 45%;
+}
+
+#stock-form {
+    width: 75%;
+    margin-top: 2.5em;
+}
+
+#ProductCodeInput {
+    width: 40%;
+}
+
+/* #product-info-displays {
+    
+} */
+
+
+.table {
+    width: 80%;
+    margin: auto;
+    text-align: center;
+    vertical-align: middle;
+    border: 2px solid black;
+}
+
+.table > th {
+    width: auto !important;
+}
+
+#manage-account-table, #view-stock-table {
+    width: 60%;
+}
+
+#view-stock-table {
+    border: 2px solid black;
+}
