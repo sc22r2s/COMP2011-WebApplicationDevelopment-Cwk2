@@ -408,7 +408,7 @@ def viewStock():
              "stockInOutId and p.id = siod.productId GROUP BY productName")
 
     try:
-        connection = sqlite3.connect("billing.db")
+        connection = sqlite3.connect("inventory.db")
         cursor = connection.cursor()
 
         stocks = cursor.execute(query).fetchall()
@@ -433,7 +433,7 @@ def viewStockDetail(product_id):
              "siod.stockInOutId and p.id = siod.productId")
 
     try:
-        connection = sqlite3.connect("billing.db")
+        connection = sqlite3.connect("inventory.db")
         cursor = connection.cursor()
 
         details = cursor.execute(query).fetchall()
