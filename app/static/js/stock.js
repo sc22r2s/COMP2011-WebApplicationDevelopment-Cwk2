@@ -85,7 +85,7 @@ function saveBatch() {
     alert("Batch code must be provided");
   } else {
     batch["batchCode"] = $("#BatchCodeInput").val();
-    batch["batchDirection"] = $("#BatchInOutDropdown").val();
+    batch["batchDirection"] = $("#StockInOut").val();
 
     $.ajax({
       type: "GET",

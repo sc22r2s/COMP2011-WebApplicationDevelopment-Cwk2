@@ -5,13 +5,11 @@
 }
 
 .head-text {
-    font-size: 1.5em;
-    font-style: italic;
+    font-size: 2em;
     font-weight: 600;
     text-align: center;
     padding-top: 0.5em;
     padding-bottom: 0.75em;
-    text-decoration: underline;
 }
 
 .forms {
@@ -52,9 +50,10 @@
     width: 40%;
 }
 
-/* #product-info-displays {
-    
-} */
+#submit-batch-btn {
+    width: 30%;
+    border: 1px solid black;
+}
 
 
 .table {
