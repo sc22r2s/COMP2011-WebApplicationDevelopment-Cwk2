@@ -1,8 +1,9 @@
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from app import app, db, admin, models, login_manager, bcrypt
-from flask_login import UserMixin, login_user, logout_user, login_required, current_user
+from flask_login import login_user, logout_user, login_required, current_user
 
-from sqlalchemy.exc import IntegrityError, DataError, OperationalError, PendingRollbackError
+from sqlalchemy.exc import (IntegrityError, DataError, OperationalError,
+                            PendingRollbackError)
 from sqlalchemy.orm.exc import UnmappedInstanceError
 from .forms import (LoginForm, SignUpForm, EditAccountForm,
                     AddProductForm, EditProductForm)
@@ -30,7 +31,7 @@ def register():
     if request.method == "POST":
         if form.validate_on_submit():
             try:
-                if request.form.get("password") == request.form.get("confirmPassword"):
+                if (request.form.get("password") == request.form.get("confirmPassword")):
                     # Encrypt password
                     hashedPassword = bcrypt.generate_password_hash(
                         request.form.get("password")).decode('utf-8')
@@ -44,7 +45,8 @@ def register():
                     return redirect(url_for("login"))
                 else:  # Passwords does not match
                     flash("Passwords does not match", "danger")
-            except (IntegrityError, PendingRollbackError):  # Username already exists
+            # Username already exists
+            except (IntegrityError, PendingRollbackError):
                 db.session.rollback()
                 flash("Username already taken", "danger")
 
@@ -65,7 +67,8 @@ def login():
             try:
                 user = models.Users.query.filter_by(
                     username=request.form.get("username")).first()
-                if bcrypt.check_password_hash(user.password, request.form.get("password")):
+                if bcrypt.check_password_hash(user.password,
+                                              request.form.get("password")):
                     login_user(user)
 
                     flash("Logged in successfully", "success")
@@ -163,7 +166,7 @@ def editAccount(account_id):
             if form.validate_on_submit():
                 try:
                     if bcrypt.check_password_hash(user.password, request.form.get("currentPassword")):
-                        if request.form.get("password") == request.form.get("confirmPassword"):
+                        if (request.form.get("password") == request.form.get("confirmPassword")):
                             user.password = bcrypt.generate_password_hash(
                                 request.form.get("password")).decode('utf-8')
                             user.username = request.form.get("username")
@@ -185,7 +188,8 @@ def editAccount(account_id):
             form.username.default = user.username
             form.process()
 
-            return render_template("edit_account.html", account=user, form=form)
+            return render_template("edit_account.html", account=user,
+                                   form=form)
 
     except (IntegrityError, AttributeError):
         flash("This account does not exist", "danger")
@@ -251,9 +255,11 @@ def viewProduct():
 
     if current_user.username == "admin":
 
-        return render_template("view_product.html", products=products, admin=True)
+        return render_template("view_product.html", products=products,
+                               admin=True)
     else:
-        return render_template("view_product.html", products=products, admin=False)
+        return render_template("view_product.html", products=products,
+                               admin=False)
 
 
 @app.route("/delete-product/<product_id>", methods=["GET", "POST"])
@@ -277,13 +283,15 @@ def deleteProduct(product_id):
             flash("Product has been deleted", "success")
 
             products = db.session.query(models.Product).all()
-            return render_template("view_product.html", products=products, admin=True)
+            return render_template("view_product.html", products=products,
+                                   admin=True)
 
-        except (IntegrityError, AttributeError, PendingRollbackError, UnmappedInstanceError):
-            flash("This product is already added in stock or it does not exist", "danger")
-            
+        except (IntegrityError, AttributeError, PendingRollbackError,
+                UnmappedInstanceError):
+            flash("This product is already added in stock or it does not "
+                  "exist", "danger")
+
             return redirect(url_for("viewProduct"))
-
 
 
 @app.route("/edit-product/<product_id>", methods=["GET", "POST"])
@@ -394,7 +402,10 @@ def addBatch():
 
 @app.route("/view-stock")
 def viewStock():
-    query = "SELECT productId, productCode, productName, sum(iif(inOut == 0, quantity, -quantity)) as stockBalance FROM stock_in_out as sio, stock_in_out_detail as siod, product as p WHERE sio.id = siod.stockInOutId and p.id = siod.productId GROUP BY productName"
+    query = ("SELECT productId, productCode, productName, sum(iif(inOut == 0,"
+             "quantity, -quantity)) as stockBalance FROM stock_in_out as sio,"
+             " stock_in_out_detail as siod, product as p WHERE sio.id = siod."
+             "stockInOutId and p.id = siod.productId GROUP BY productName")
 
     try:
         connection = sqlite3.connect("billing.db")
@@ -404,10 +415,10 @@ def viewStock():
 
         cursor.close()
         connection.close()
-        
+
         return render_template("view_stock.html", stocks=stocks)
 
-    except:
+    except sqlite3.Error:
         flash("Error occurred", "danger")
 
     return render_template("view_stock.html", stocks=stocks)
@@ -415,8 +426,12 @@ def viewStock():
 
 @app.route("/view-stock-detail/<product_id>", methods=["GET", "POST"])
 def viewStockDetail(product_id):
-    
-    query = "SELECT productCode, productName, batchCode, batchDate, iif(inOut == 0, quantity, -quantity) as stockBalance FROM stock_in_out as sio, stock_in_out_detail as siod, product as p WHERE siod.productId = " + product_id + " and sio.id = siod.stockInOutId and p.id = siod.productId"
+    query = ("SELECT productCode, productName, batchCode, batchDate, iif(inOut"
+             " == 0, quantity, -quantity) as stockBalance FROM stock_in_out as"
+             " sio, stock_in_out_detail as siod, product as p WHERE "
+             "siod.productId = " + product_id + " and sio.id = "
+             "siod.stockInOutId and p.id = siod.productId")
+
     try:
         connection = sqlite3.connect("billing.db")
         cursor = connection.cursor()
@@ -425,10 +440,10 @@ def viewStockDetail(product_id):
 
         cursor.close()
         connection.close()
-        
+
         return render_template("view_stock_detail.html", details=details)
 
-    except:
+    except sqlite3.Error:
         flash("Error occurred", "danger")
 
     return render_template("view_stock_detail.html")
@@ -442,5 +457,5 @@ def home():
         The template to be rendered.
     """
     db.session.execute('pragma foreign_keys=on')
-    
+
     return render_template("index.html")

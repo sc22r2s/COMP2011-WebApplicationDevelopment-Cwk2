@@ -20,6 +20,6 @@ bcrypt = Bcrypt(app)
 app.config.from_object('config')
 
 migrate = Migrate(app, db, render_as_batch=True)
-admin = Admin(app,template_mode='bootstrap4')
+admin = Admin(app, template_mode='bootstrap4')
 
 from app import views, models
