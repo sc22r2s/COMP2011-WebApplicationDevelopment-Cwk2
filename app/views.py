@@ -31,7 +31,8 @@ def register():
     if request.method == "POST":
         if form.validate_on_submit():
             try:
-                if (request.form.get("password") == request.form.get("confirmPassword")):
+                if (request.form.get("password") ==
+                        request.form.get("confirmPassword")):
                     # Encrypt password
                     hashedPassword = bcrypt.generate_password_hash(
                         request.form.get("password")).decode('utf-8')
@@ -165,8 +166,11 @@ def editAccount(account_id):
         if current_user.username == "admin":
             if form.validate_on_submit():
                 try:
-                    if bcrypt.check_password_hash(user.password, request.form.get("currentPassword")):
-                        if (request.form.get("password") == request.form.get("confirmPassword")):
+                    if bcrypt.check_password_hash(
+                            user.password,
+                            request.form.get("currentPassword")):
+                        if (request.form.get("password") ==
+                                request.form.get("confirmPassword")):
                             user.password = bcrypt.generate_password_hash(
                                 request.form.get("password")).decode('utf-8')
                             user.username = request.form.get("username")
@@ -210,12 +214,13 @@ def addProduct():
     if current_user.username == "admin":
         if form.validate_on_submit():
             try:
-                product = models.Product(productCode=request.form.get("productCode"),
-                                         productName=request.form.get(
-                                             "productName"),
-                                         description=request.form.get(
-                                             "description"),
-                                         rate=request.form.get("rate"))
+                product = models.Product(
+                    productCode=request.form.get("productCode"),
+                    productName=request.form.get(
+                        "productName"),
+                    description=request.form.get(
+                        "description"),
+                    rate=request.form.get("rate"))
                 db.session.add(product)
                 db.session.commit()
 
@@ -402,10 +407,11 @@ def addBatch():
 
 @app.route("/view-stock")
 def viewStock():
-    query = ("SELECT productId, productCode, productName, sum(case inOut when 0 then "
-             "quantity else -quantity end) as stockBalance FROM stock_in_out as sio,"
-             " stock_in_out_detail as siod, product as p WHERE sio.id = siod."
-             "stockInOutId and p.id = siod.productId GROUP BY productId, productCode, productName")
+    query = ("SELECT productId, productCode, productName, sum(case inOut when "
+             "0 then quantity else -quantity end) as stockBalance FROM "
+             "stock_in_out as sio, stock_in_out_detail as siod, product as p "
+             "WHERE sio.id = siod.stockInOutId and p.id = siod.productId GROUP"
+             " BY productId, productCode, productName")
 
     try:
         connection = sqlite3.connect("inventory.db")

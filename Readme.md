@@ -49,3 +49,11 @@ GROUP BY productName
 SELECT productCode, productName, batchCode, batchDate, iif(inOut == 0, quantity, -quantity) as stockBalance
 FROM stock_in_out as sio, stock_in_out_detail as siod, product as p
 WHERE siod.productId = 1 and sio.id = siod.stockInOutId and p.id = siod.productId
+
+SELECT id, batchCode, batchDate, CASE inOut WHEN 0 THEN "Batch In" ELSE "Batch Out" END AS "batchDirection"
+FROM stock_in_out
+
+SELECT productId, productCode, productName, quantity
+FROM stock_in_out_detail AS siod, product AS p
+WHERE siod.productId = p.id
+AND stockInOutId = 1
