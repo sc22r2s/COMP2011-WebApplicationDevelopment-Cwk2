@@ -352,6 +352,11 @@ def editProduct(product_id):
 @app.route("/stock", methods=["GET", "POST"])
 @login_required
 def stock():
+    """Displays and allows stocks to be added.
+
+    Returns:
+        The template to be rendered.
+    """
     return render_template("stock.html")
 
 
@@ -374,6 +379,11 @@ def displayProductDetail():
 
 @app.route("/ajax/add-batch", methods=["GET", "POST"])
 def addBatch():
+    """Adds a batch to the database.
+
+    Returns:
+        json: success or error message.
+    """
     batch = json.loads(request.args.get("batch"))
 
     try:
@@ -405,8 +415,73 @@ def addBatch():
         return jsonify({"error": ""})
 
 
+@app.route("/view-batch")
+def viewBatch():
+    """Displayed the batches added.
+
+    Returns:
+        The template to be rendered.
+    """
+    query = ("SELECT id, batchCode, batchDate, CASE inOut WHEN 0 THEN \"Batch "
+             "In\" ELSE \"Batch Out\" END AS batchDirection FROM "
+             "stock_in_out")
+    
+    try:
+        connection = sqlite3.connect("inventory.db")
+        cursor = connection.cursor()
+
+        batches = cursor.execute(query).fetchall()
+
+        cursor.close()
+        connection.close()
+
+        return render_template("view_batch.html", batches=batches)
+
+    except sqlite3.Error:
+        flash("Error occurred", "danger")
+
+    return render_template("view_batch.html")
+
+
+@app.route("/view-batch-detail/<batch_id>")
+def viewBatchDetail(batch_id):
+    """Displays the details of a specific batch.
+
+    Args:
+        batch_id (int): The id of the batch.
+
+    Returns:
+        The template to be rendered.
+    """
+    query = ("SELECT batchCode, CASE inOut WHEN 0 THEN \"Batch In\" ELSE \"Batch Out\" END, batchDate, productCode, productName, quantity "
+             "FROM stock_in_out_detail AS siod, product AS p, stock_in_out as sio "
+             "WHERE siod.productId = p.id AND sio.id = stockInOutId "
+             "AND stockInOutId = " + batch_id)
+    
+    try:
+        connection = sqlite3.connect("inventory.db")
+        cursor = connection.cursor()
+
+        details = cursor.execute(query).fetchall()
+
+        cursor.close()
+        connection.close()
+
+        return render_template("view_batch_detail.html", details=details)
+
+    except sqlite3.Error:
+        flash("Error occurred", "danger")
+
+    return render_template("view_batch_detail.html")
+
+
 @app.route("/view-stock")
 def viewStock():
+    """Displays the stocks that has been added.
+
+    Returns:
+        The template to be rendered.
+    """
     query = ("SELECT productId, productCode, productName, sum(case inOut when "
              "0 then quantity else -quantity end) as stockBalance FROM "
              "stock_in_out as sio, stock_in_out_detail as siod, product as p "
@@ -432,6 +507,14 @@ def viewStock():
 
 @app.route("/view-stock-detail/<product_id>", methods=["GET", "POST"])
 def viewStockDetail(product_id):
+    """Displays the details of a particular product.
+
+    Args:
+        product_id (int): Id of the product.
+
+    Returns:
+        The template to be rendered.
+    """
     query = ("SELECT productCode, productName, batchCode, batchDate,"
              " case inOut when 0 then quantity else -quantity end as"
              " stockBalance FROM stock_in_out as sio, "

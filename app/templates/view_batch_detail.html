@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="head-text">Batch Detail</div>
+
+<table class="table table-striped table-bordered table-hover table-sm" id="view-stock-table">
+    <thead>
+      <tr>
+        <td colspan=4><b>Batch Code = {{ details[0][0] }}</b></td>
+      </tr>
+      <tr>
+        <td colspan=4><b>Batch Date = {{ details[0][2] }}</b></td>
+      </tr>
+      <tr>
+        <td colspan=4><b>{{ details[0][1] }}</b></td>
+      </tr>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Product Code</th>
+        <th scope="col">Product Name</th>
+        <th scope="col">Quantity</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for deatil in details %}
+        <tr>
+          <th scope="row">{{ loop.index }}</th>
+          <td>{{ deatil[3] }}</td>
+          <td>{{ deatil[4] }}</td>
+          <td>{{ deatil[5] }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
