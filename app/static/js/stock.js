@@ -13,6 +13,9 @@ $("#ProductCodeInput").keydown(function (event) {
       success: function (data, status, xhr) {
         if (data.hasOwnProperty("error")) {
           alert("Invalid product code");
+
+          // Clear data from form after appending data in table
+          clearProductDetail();
         } else {
           // Add data to the form
           $("#ProductIdDisplay").val(data.id);
@@ -57,7 +60,8 @@ $("form").on("submit", function (event) {
         "</td><td>" +
         $("#ProductQuantityInput").val() +
         "</td><td><button type='button' class='btn btn-light' onclick='removeRow(this, " +
-        $("#ProductIdDisplay").val()+")'>Delete<i class='far fa-trash-alt'></i></button></td></tr>"
+        $("#ProductIdDisplay").val() +
+        ")'>Delete<i class='far fa-trash-alt'></i></button></td></tr>"
     );
 
     batch["productDetail"].push({
@@ -67,46 +71,51 @@ $("form").on("submit", function (event) {
     batchProducts.push(parseInt($("#ProductIdDisplay").val()));
 
     // Clear data from form after appending data in table
-    $("#ProductCodeInput").val("");
-    $("#ProductIdDisplay").val("");
-    $("#ProductNameDisplay").val("");
-    $("#ProductDescriptionDisplay").val("");
-    $("#ProductRateDisplay").val("");
-    $("#ProductQuantityInput").val("");
+    clearProductDetail();
 
     // Next cursor destination
     $("#ProductCodeInput").focus();
   }
 });
 
+// Clear all fields related to product
+function clearProductDetail() {
+  $("#ProductCodeInput").val("");
+  $("#ProductIdDisplay").val("");
+  $("#ProductNameDisplay").val("");
+  $("#ProductDescriptionDisplay").val("");
+  $("#ProductRateDisplay").val("");
+  $("#ProductQuantityInput").val("");
+}
+
 // remove the row and also remove from the json objects
 function removeRow(btndel, pId) {
-    if (typeof(btndel) == "object") {
-        if (removeProductFromBatch(pId))
-            $(btndel).closest("tr").remove();
-    } else {
-        return false;
-    }
+  if (typeof btndel == "object") {
+    if (removeProductFromBatch(pId)) $(btndel).closest("tr").remove();
+  } else {
+    return false;
+  }
 }
 
 // remove pId from batch and batchProducts
 function removeProductFromBatch(pId) {
-    // find the index position
-    const requiredIndex = batch["productDetail"].findIndex(el => {
-      return el.productId === pId;
-   });
-   if(requiredIndex === -1){
-      return false;
-   };
+  // find the index position
+  const requiredIndex = batch["productDetail"].findIndex((el) => {
+    return el.productId === pId;
+  });
+  if (requiredIndex === -1) {
+    return false;
+  }
 
-   // also remove item from batchProducts
-   const idx = batchProducts.indexOf(pId);
-    if (idx > -1) { // only splice array when item is found
-      batchProducts.splice(idx, 1); // remove one item only, which should be the found pId at the index
-    }
+  // also remove item from batchProducts
+  const idx = batchProducts.indexOf(pId);
+  if (idx > -1) {
+    // only splice array when item is found
+    batchProducts.splice(idx, 1); // remove one item only, which should be the found pId at the index
+  }
 
-    // remove from batch
-   return !!batch["productDetail"].splice(requiredIndex, 1);
+  // remove from batch
+  return !!batch["productDetail"].splice(requiredIndex, 1);
 }
 
 function saveBatch() {
