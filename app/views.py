@@ -402,10 +402,10 @@ def addBatch():
 
 @app.route("/view-stock")
 def viewStock():
-    query = ("SELECT productId, productCode, productName, sum(iif(inOut == 0,"
-             "quantity, -quantity)) as stockBalance FROM stock_in_out as sio,"
+    query = ("SELECT productId, productCode, productName, sum(case inOut when 0 then "
+             "quantity else -quantity end) as stockBalance FROM stock_in_out as sio,"
              " stock_in_out_detail as siod, product as p WHERE sio.id = siod."
-             "stockInOutId and p.id = siod.productId GROUP BY productName")
+             "stockInOutId and p.id = siod.productId GROUP BY productId, productCode, productName")
 
     try:
         connection = sqlite3.connect("inventory.db")
@@ -426,9 +426,10 @@ def viewStock():
 
 @app.route("/view-stock-detail/<product_id>", methods=["GET", "POST"])
 def viewStockDetail(product_id):
-    query = ("SELECT productCode, productName, batchCode, batchDate, iif(inOut"
-             " == 0, quantity, -quantity) as stockBalance FROM stock_in_out as"
-             " sio, stock_in_out_detail as siod, product as p WHERE "
+    query = ("SELECT productCode, productName, batchCode, batchDate,"
+             " case inOut when 0 then quantity else -quantity end as"
+             " stockBalance FROM stock_in_out as sio, "
+             "stock_in_out_detail as siod, product as p WHERE "
              "siod.productId = " + product_id + " and sio.id = "
              "siod.stockInOutId and p.id = siod.productId")
 

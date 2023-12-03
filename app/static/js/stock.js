@@ -56,7 +56,8 @@ $("form").on("submit", function (event) {
         $("#ProductNameDisplay").val() +
         "</td><td>" +
         $("#ProductQuantityInput").val() +
-        "</td></tr>"
+        "</td><td><button type='button' class='btn btn-light' onclick='removeRow(this, " +
+        $("#ProductIdDisplay").val()+")'>Delete<i class='far fa-trash-alt'></i></button></td></tr>"
     );
 
     batch["productDetail"].push({
@@ -77,6 +78,36 @@ $("form").on("submit", function (event) {
     $("#ProductCodeInput").focus();
   }
 });
+
+// remove the row and also remove from the json objects
+function removeRow(btndel, pId) {
+    if (typeof(btndel) == "object") {
+        if (removeProductFromBatch(pId))
+            $(btndel).closest("tr").remove();
+    } else {
+        return false;
+    }
+}
+
+// remove pId from batch and batchProducts
+function removeProductFromBatch(pId) {
+    // find the index position
+    const requiredIndex = batch["productDetail"].findIndex(el => {
+      return el.productId === pId;
+   });
+   if(requiredIndex === -1){
+      return false;
+   };
+
+   // also remove item from batchProducts
+   const idx = batchProducts.indexOf(pId);
+    if (idx > -1) { // only splice array when item is found
+      batchProducts.splice(idx, 1); // remove one item only, which should be the found pId at the index
+    }
+
+    // remove from batch
+   return !!batch["productDetail"].splice(requiredIndex, 1);
+}
 
 function saveBatch() {
   if (batchProducts.length === 0) {
