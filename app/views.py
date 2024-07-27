@@ -2,6 +2,7 @@ from flask import render_template, request, redirect, url_for, flash, jsonify
 from app import app, db, admin, models, login_manager, bcrypt
 from flask_login import login_user, logout_user, login_required, current_user
 
+from sqlalchemy.sql import text
 from sqlalchemy.exc import (IntegrityError, DataError, OperationalError,
                             PendingRollbackError)
 from sqlalchemy.orm.exc import UnmappedInstanceError
@@ -546,6 +547,6 @@ def home():
     Returns:
         The template to be rendered.
     """
-    db.session.execute('pragma foreign_keys=on')
+    db.session.execute(text('pragma foreign_keys=on'))
 
     return render_template("index.html")

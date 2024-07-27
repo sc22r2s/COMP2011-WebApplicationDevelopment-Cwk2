@@ -8,6 +8,7 @@ from flask_admin import Admin
 app = Flask(__name__)
 
 # Initialize SQLAlchemy
+app.config.from_object('config')
 db = SQLAlchemy(app)
 
 # To manage login
@@ -16,8 +17,6 @@ login_manager.init_app(app)
 
 # To manage encryption
 bcrypt = Bcrypt(app)
-
-app.config.from_object('config')
 
 migrate = Migrate(app, db, render_as_batch=True)
 admin = Admin(app, template_mode='bootstrap4')
